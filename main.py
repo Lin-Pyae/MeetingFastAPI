@@ -31,7 +31,7 @@ async def UpdateRoom(roomId : PydanticObjectId, updateroom: MeetingRoom):
     room.location = updateroom.location
     room.capacity = updateroom.capacity
     room.facilities = updateroom.facilities
-    room.save()
+    await room.save()
     return room
 
 
