@@ -1,7 +1,8 @@
 from beanie import Document,PydanticObjectId, Link
 from typing import List, Optional
-from datetime import datetime
+from datetime import date, datetime
 
+today = datetime.today().date()
 class MeetingRoom(Document):
     room_name: str
     location: str
@@ -14,12 +15,12 @@ class MeetingRoom(Document):
 
 
 class Booking(Document):
-    meeting_room: Link[MeetingRoom]
+    meeting_room: PydanticObjectId
     meeting_title: str
-    attendess: List[str]
+    attendess: int
     start_time: datetime
     end_time: datetime
-    booking_date: datetime
+    booking_date: Optional[datetime] = datetime.now()
 
     class Settings:
         name = "Bookings"
