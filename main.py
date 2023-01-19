@@ -11,7 +11,7 @@ import pytz
 
 app = FastAPI()
 today = datetime.date.today()
-utc = pytz.UTC
+myanmar_tz = pytz.timezone("Asia/Rangoon")
 
 
 origins = [
@@ -26,37 +26,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# test_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZXMiOiJ1c2VyIn0.Y7eueui2xsh8rhVaa-nHjxestvcpJYEc8Y5qfU8HziM"
-#to control all routes from dependency function
-#to read multiple files from fast api documentation
-#get the secret key from keycloak
-#control route access in react for admin 
+
 @app.on_event("startup")
 async def start_db():
     await init_db()
 
-# async def token_check(token: Union[str,None]= Header(default=None)):
-#     print("this is token check function")
-#     if token==None:
-#         raise HTTPException(
-#             status_code=401,
-#             detail="You are not authorized as token is not included"
-#         )
-    
-#     try:
-#         decoded_jwt = jwt.decode(token,options={"verify_signature": False})
-#         return decoded_jwt
-#     except:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="We can't extract the informations since you didn't provid the correct token"
-
-#         )
-    
-# async def get_role(role:dict=Depends(token_check)):
-#     print("This is get role function")
-#     usr_role = role['roles']
-#     return usr_role
 
 
 #admin routes
@@ -66,8 +40,8 @@ async def CreateRoom(newRoom: MeetingRoom, token:str=Depends(admin)):
     return newRoom
 
 @app.get('/getAllRooms')
-async def GetAllRooms(token:str=Depends(admin)):
-    print(token)
+async def GetAllRooms(token:str=Depends(user)):
+    # print(token)
     return await MeetingRoom.find().to_list()
 
 @app.get('/getOneRoom/{roomId}')
@@ -97,23 +71,13 @@ async def DeleteRoom(roomId: PydanticObjectId, token:str=Depends(admin)):
 async def BookRoom(addBooking: Booking, token:str=Depends(user)):
     bookedRoom = await MeetingRoom.find_one(MeetingRoom.id == addBooking.meeting_room)
     allBookings = await Booking.find().to_list()
-
     if addBooking.attendess > bookedRoom.capacity:
-        raise HTTPException(
-            status_code=401,
-            detail="Attendess exceed the meeting room capacity"     
-        )
+        return "exceed"
 
     for booking in allBookings:
         if booking.meeting_room == addBooking.meeting_room:
-            print("1 => ",type(booking.start_time))
-            print("2 => ",type(addBooking.start_time))
-            print("3 => ",type(booking.end_time))
-            # if booking.start_time >= addBooking.start_time and booking.end_time <= addBooking.start_time:
-            #     raise HTTPException(
-            #         status_code=400,
-            #         detail="This room has already booked"
-            #     )
+            if (booking.start_time <= addBooking.start_time  <= booking.end_time) :
+                return False
     await addBooking.create()
     return addBooking   
 
@@ -121,8 +85,6 @@ async def BookRoom(addBooking: Booking, token:str=Depends(user)):
 
 @app.get('/getAllBooking')      
 async def GetAllBooking(token:str=Depends(user)):
-    # import pdb
-    # pdb.set_trace()
     todayandAfterBooks = []
     allBookings = await Booking.find().to_list()
     for booking in allBookings:
@@ -133,4 +95,5 @@ async def GetAllBooking(token:str=Depends(user)):
 
 @app.get('/getBookingsByRoomId/{roomId}')
 async def GetBookingsByRoomId(roomId: PydanticObjectId, token:str=Depends(user)):
+    
     return await Booking.find(Booking.meeting_room == roomId).to_list()

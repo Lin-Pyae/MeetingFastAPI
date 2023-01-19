@@ -11,16 +11,16 @@ class MeetingRoom(Document):
     status: Optional[bool] = False
 
     class Settings:
-        name = "Meeting Rooms"
+        name = "meeting_rooms"
 
 
 class Booking(Document):
     meeting_room: PydanticObjectId
     meeting_title: str
     attendess: int
-    start_time: datetime
-    end_time: datetime
-    booking_date: Optional[datetime] = datetime.now()
+    start_time: int
+    end_time: int
+    booking_date: str
 
     class Settings:
-        name = "Bookings"
+        name = "bookings_db"
