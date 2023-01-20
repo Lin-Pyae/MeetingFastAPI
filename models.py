@@ -16,6 +16,7 @@ class MeetingRoom(Document):
 
 class Booking(Document):
     meeting_room: PydanticObjectId
+    userId : str
     meeting_title: str
     attendess: int
     start_time: int

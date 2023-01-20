@@ -76,7 +76,7 @@ async def BookRoom(addBooking: Booking, token:str=Depends(user)):
 
     for booking in allBookings:
         if booking.meeting_room == addBooking.meeting_room:
-            if (booking.start_time <= addBooking.start_time  <= booking.end_time) :
+            if (booking.start_time <= addBooking.start_time  < booking.end_time) :
                 return False
     await addBooking.create()
     return addBooking   
@@ -94,6 +94,9 @@ async def GetAllBooking(token:str=Depends(user)):
     return todayandAfterBooks
 
 @app.get('/getBookingsByRoomId/{roomId}')
-async def GetBookingsByRoomId(roomId: PydanticObjectId, token:str=Depends(user)):
-    
+async def GetBookingsByRoomId(roomId: PydanticObjectId, token:str=Depends(user)):  
     return await Booking.find(Booking.meeting_room == roomId).to_list()
+
+@app.get('/yourBooking/{userId}')
+async def UserSpecificBooking(userId: str):
+    return await Booking.find(Booking.userId == userId).to_list()
