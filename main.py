@@ -85,13 +85,8 @@ async def BookRoom(addBooking: Booking, token:str=Depends(user)):
 
 @app.get('/getAllBooking')      
 async def GetAllBooking(token:str=Depends(user)):
-    todayandAfterBooks = []
     allBookings = await Booking.find().to_list()
-    for booking in allBookings:
-        if booking.end_time >= datetime.datetime.now():
-            todayandAfterBooks.append(booking)
-
-    return todayandAfterBooks
+    return allBookings
 
 @app.get('/getBookingsByRoomId/{roomId}')
 async def GetBookingsByRoomId(roomId: PydanticObjectId, token:str=Depends(user)):  
