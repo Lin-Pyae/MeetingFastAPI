@@ -93,5 +93,23 @@ async def GetBookingsByRoomId(roomId: PydanticObjectId, token:str=Depends(user))
     return await Booking.find(Booking.meeting_room == roomId).to_list()
 
 @app.get('/yourBooking/{userId}')
-async def UserSpecificBooking(userId: str):
-    return await Booking.find(Booking.userId == userId).to_list()
+async def UserSpecificBooking(userId: str, token:str=Depends(user)):
+    bookingIncludeRoom = []
+    bookings = await Booking.find(Booking.userId == userId).to_list()
+    for booking in bookings:
+        dictBooking = dict(booking)
+        room = await MeetingRoom.get(booking.meeting_room)
+        dictBooking["RoomName"] = room.room_name
+        bookingIncludeRoom.append(dictBooking)
+    return bookingIncludeRoom
+
+@app.put('/updateBooking/{bookingId}')
+async def UpdateBooking(bookingId: PydanticObjectId, updateBooking: Booking, token:str=Depends(user)):
+    booking = await Booking.find_one(Booking.id == bookingId)
+    booking.meeting_title = updateBooking.meeting_title
+    booking.start_time = updateBooking.start_time
+    booking.end_time = updateBooking.end_time
+    await booking.save()
+    return booking
+
+
