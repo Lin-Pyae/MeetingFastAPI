@@ -7,11 +7,16 @@ import jwt
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from auth import admin,user
-import pytz
+from pydantic import BaseModel
 
 app = FastAPI()
 today = datetime.date.today()
-myanmar_tz = pytz.timezone("Asia/Rangoon")
+
+class UpdateBooking(BaseModel):
+    title:str
+    booking_date:str
+    startTime:int
+    endTime:int
 
 
 origins = [
@@ -104,11 +109,12 @@ async def UserSpecificBooking(userId: str, token:str=Depends(user)):
     return bookingIncludeRoom
 
 @app.put('/updateBooking/{bookingId}')
-async def UpdateBooking(bookingId: PydanticObjectId, updateBooking: Booking, token:str=Depends(user)):
+async def UpdateBooking(bookingId: PydanticObjectId, updateBooking: UpdateBooking, token:str=Depends(user)):
     booking = await Booking.find_one(Booking.id == bookingId)
-    booking.meeting_title = updateBooking.meeting_title
-    booking.start_time = updateBooking.start_time
-    booking.end_time = updateBooking.end_time
+    booking.meeting_title = updateBooking.title
+    booking.booking_date = updateBooking.booking_date
+    booking.start_time = updateBooking.startTime
+    booking.end_time = updateBooking.endTime
     await booking.save()
     return booking
 
